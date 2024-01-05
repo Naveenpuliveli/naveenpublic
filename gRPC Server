@@ -1,0 +1,46 @@
+package main
+
+import (
+	"context"
+	"fmt"
+	"log"
+	"net"
+
+	"github.com/golang/protobuf/ptypes/empty"
+	"google.golang.org/grpc"
+	pb "yourgithub.com/yourusername/yourrepository/protos"
+)
+
+type server struct {
+	users map[string]*pb.User
+}
+
+func (s *server) PurchaseTicket(ctx context.Context, req *pb.PurchaseRequest) (*pb.Receipt, error) {
+	// Implement purchase logic and in-memory storage
+	// ...
+
+	// Dummy response for illustration
+	return &pb.Receipt{
+		From:   req.GetFrom(),
+		To:     req.GetTo(),
+		User:   req.GetUser(),
+		Price:  20.0,
+		Seat:   "A1",
+		Status: "Success",
+	}, nil
+}
+
+// Implement other gRPC methods (ShowReceipt, ViewUsers, RemoveUser, ModifyUserSeat)...
+
+func main() {
+	lis, err := net.Listen("tcp", ":50051")
+	if err != nil {
+		log.Fatalf("failed to listen: %v", err)
+	}
+	s := grpc.NewServer()
+	pb.RegisterTicketServiceServer(s, &server{users: make(map[string]*pb.User)})
+	fmt.Println("gRPC server is running on port 50051")
+	if err := s.Serve(lis); err != nil {
+		log.Fatalf("failed to serve: %v", err)
+	}
+}
